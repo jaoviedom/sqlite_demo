@@ -35,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
+  int? selectedId;
   final TextEditingController textController = TextEditingController();
 
   @override
@@ -58,8 +58,27 @@ class _MyHomePageState extends State<MyHomePage> {
               : ListView(
                 children: snapshot.data!.map((grocery) {
                   return Center(
-                    child: ListTile(
-                      title: Text(grocery.name),
+                    child: Card(
+                      color: selectedId == grocery.id ? Colors.white70 : Colors.white,
+                      child: ListTile(
+                        title: Text(grocery.name),
+                        onTap: (){
+                          setState(() {
+                            if (selectedId == null) {
+                              textController.text = grocery.name;
+                              selectedId = grocery.id;
+                            } else {
+                              textController.text = "";
+                              selectedId = null;
+                            }
+                          });
+                        },
+                        onLongPress: () {
+                          setState(() {
+                            DBHelper.instance.delete(grocery);
+                          });
+                        },
+                      )
                     ),
                   );
                 }).toList(),
@@ -70,11 +89,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await DBHelper.instance.add(
-            Grocery(name: textController.text)
+          selectedId != null ?
+            await DBHelper.instance.update(
+              Grocery(id: selectedId, name: textController.text)
+            ) :
+            await DBHelper.instance.add(
+              Grocery(name: textController.text)
           );
           setState(() {
             textController.clear();
+            selectedId = null;
           });
         },
         tooltip: 'Guardar',

@@ -1,6 +1,5 @@
 import 'dart:core';
 
-import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io';
 import 'package:path/path.dart';
@@ -47,5 +46,15 @@ class DBHelper {
   Future<int> add(Grocery grocery) async {
     Database db = await instance.database;
     return db.insert(_tableName, grocery.toMap());
+  }
+
+  Future<int> delete(Grocery grocery) async {
+    Database db = await instance.database;
+    return db.delete(_tableName, where: "id = ?", whereArgs: [grocery.id]);
+  }
+
+  Future<int> update(Grocery grocery) async {
+    Database db = await instance.database;
+    return db.update(_tableName, grocery.toMap(), where: 'id =?', whereArgs: [grocery.id]);
   }
 }
