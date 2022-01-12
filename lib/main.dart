@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sqlite_demo/DB/db_helper.dart';
 import 'package:sqlite_demo/UI/insert_item.dart';
+import 'package:get/get.dart';
 
 import 'Models/grocery.dart';
 
@@ -15,10 +16,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'SQLite example',
       theme: ThemeData(
-
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'SQLite example'),
@@ -72,10 +72,23 @@ class _MyHomePageState extends State<MyHomePage> {
                             }
                           });
                         },
+                        trailing: GestureDetector(
+                          child: const Icon(Icons.create_rounded),
+                          onTap: () {
+                            setState(() {
+                              textController.text = grocery.name;
+                              selectedId = grocery.id;
+                            });
+                            showDialog(
+                                context: context,
+                                builder: (context) => _buildEditAlertDialog(),
+                            );
+                          },
+                        ),
                         onLongPress: () {
-                          setState(() {
-                            DBHelper.instance.delete(grocery);
-                          });
+                          showDialog(
+                            context: context,
+                            builder: (context) => _buildDeleteAlertDialog(grocery),);
                         },
                       )
                     ),
@@ -93,26 +106,75 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   DBHelper.instance.getGroceries();
                 });
+                Get.snackbar("Agregado", "Elemento agregado correctamente!",
+                    snackPosition: SnackPosition.BOTTOM);
           });
         },
-        /*onPressed: () async {
-          selectedId != null ?
-            await DBHelper.instance.update(
-              Grocery(id: selectedId, name: textController.text)
-            ) :
-            await DBHelper.instance.add(
-              Grocery(name: textController.text)
-          );
-          setState(() {
-            textController.clear();
-            selectedId = null;
-          });
-        },*/
         tooltip: 'Nuevo elemento',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+  Widget _buildEditAlertDialog() {
+    return AlertDialog(
+      title: const Text('Editar'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text("Modifique el nombre"),
+          TextField(
+            controller: textController,
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+            child: const Text("Cancelar"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            }),
+
+        TextButton(
+            child: const Text("Editar"),
+            onPressed: () {
+              if (selectedId != null) {
+                DBHelper.instance.update(
+                    Grocery(id: selectedId, name: textController.text)
+                );
+                setState(() {
+                  DBHelper.instance.getGroceries();
+                });
+              }
+              Navigator.of(context).pop();
+            }),
+      ],
+    );
+  }
+
+  Widget _buildDeleteAlertDialog(Grocery grocery) {
+    return AlertDialog(
+      title: const Text('Eliminar'),
+      content: const Text('¿Está seguro de eliminar el elemento?'),
+      actions: <Widget>[
+        TextButton(
+            child: const Text("Cancelar"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            }),
+
+        TextButton(
+            child: const Text("Si, eliminar"),
+            onPressed: () {
+              setState(() {
+                DBHelper.instance.delete(grocery);
+              });
+              Navigator.of(context).pop();
+            }),
+      ],
+    );
+  }
+
 }
 
 
