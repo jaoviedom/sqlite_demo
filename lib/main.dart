@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sqlite_demo/DB/db_helper.dart';
+import 'package:sqlite_demo/UI/insert_item.dart';
 
 import 'Models/grocery.dart';
 
@@ -42,9 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: TextField(
-          controller: textController,
-        ),
+        title: Text("Lista de compras"),
       ),
       body: Center(
         child: FutureBuilder<List<Grocery>>(
@@ -88,7 +87,15 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
+        onPressed:() {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const InsertItem(),))
+              .then((newItem) {
+                setState(() {
+                  DBHelper.instance.getGroceries();
+                });
+          });
+        },
+        /*onPressed: () async {
           selectedId != null ?
             await DBHelper.instance.update(
               Grocery(id: selectedId, name: textController.text)
@@ -100,9 +107,9 @@ class _MyHomePageState extends State<MyHomePage> {
             textController.clear();
             selectedId = null;
           });
-        },
-        tooltip: 'Guardar',
-        child: const Icon(Icons.save),
+        },*/
+        tooltip: 'Nuevo elemento',
+        child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
